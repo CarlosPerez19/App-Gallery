@@ -20,35 +20,31 @@ export class PhotoService {
   }
 
   // Save picture to file on device
-private async savePicture(photo: Photo) {
-  // Convert photo to base64 format, required by Filesystem API to save
-  const base64Data = await this.readAsBase64(photo);
-
-  // Write the file to the data directory
-  const fileName = Date.now() + '.jpeg';
-  const savedFile = await Filesystem.writeFile({
-    path: fileName,
-    data: base64Data,
-    directory: Directory.Data
-  });
-
-  if (this.platform.is('hybrid')) {
-    // Display the new image by rewriting the 'file://' path to HTTP
-    // Details: https://ionicframework.com/docs/building/webview#file-protocol
-    return {
-      filepath: savedFile.uri,
-      webviewPath: Capacitor.convertFileSrc(savedFile.uri),
-    };
+  private async savePicture(photo: Photo) {
+    const base64Data = await this.readAsBase64(photo);
+  
+    // Generar el nombre del archivo
+    const fileName = Date.now() + '.jpeg';
+    const savedFile = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Data
+    });
+  
+    if (this.platform.is('hybrid')) {
+      return {
+        filepath: savedFile.uri,
+        webviewPath: Capacitor.convertFileSrc(savedFile.uri),
+        fileName: fileName // Guardar el nombre del archivo
+      };
+    } else {
+      return {
+        filepath: fileName,
+        webviewPath: photo.webPath,
+        fileName: fileName // Guardar el nombre del archivo
+      };
+    }
   }
-  else {
-    // Use webPath to display the new image instead of base64 since it's
-    // already loaded into memory
-    return {
-      filepath: fileName,
-      webviewPath: photo.webPath
-    };
-  }
-}
 
   private async readAsBase64(photo: Photo) {
     // "hybrid" will detect Cordova or Capacitor
@@ -79,39 +75,33 @@ private async savePicture(photo: Photo) {
   });
 
 
-  public async addNewToGallery(){
-    const capturedPhoto=await Camera.getPhoto({
-      resultType:CameraResultType.Uri,
-      source:CameraSource.Camera,
-      quality:100
+  public async addNewToGallery() {
+    const capturedPhoto = await Camera.getPhoto({
+      resultType: CameraResultType.Uri,
+      source: CameraSource.Camera,
+      quality: 100
     });
-
-    const savedImageFile = await this.savePicture(capturedPhoto)
-      this.photos.unshift(savedImageFile);
-
+  
+    const savedImageFile = await this.savePicture(capturedPhoto);
+    this.photos.unshift(savedImageFile);
+  
     Preferences.set({
       key: this.PHOTO_STORAGE,
       value: JSON.stringify(this.photos),
     });
-  };
+  }
 
   public async loadSaved() {
-    // Retrieve cached photo array data
     const { value } = await Preferences.get({ key: this.PHOTO_STORAGE });
     this.photos = (value ? JSON.parse(value) : []) as UserPhoto[];
   
-    // Easiest way to detect when running on the web:
-    // “when the platform is NOT hybrid, do this”
     if (!this.platform.is('hybrid')) {
-      // Display the photo by reading into base64 format
       for (let photo of this.photos) {
-        // Read each saved photo's data from the Filesystem
         const readFile = await Filesystem.readFile({
-            path: photo.filepath,
-            directory: Directory.Data
+          path: photo.filepath,
+          directory: Directory.Data
         });
   
-        // Web platform only: Load the photo as base64 data
         photo.webviewPath = `data:image/jpeg;base64,${readFile.data}`;
       }
     }
@@ -122,5 +112,6 @@ private async savePicture(photo: Photo) {
 
 export interface UserPhoto{
   filepath:string;
-  webviewPath?:string
+  webviewPath?:string;
+  fileName?:string
 }
