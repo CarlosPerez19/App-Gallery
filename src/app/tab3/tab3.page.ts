@@ -9,11 +9,16 @@ import { PhotoService } from '../services/photo.service';
 })
 export class Tab3Page {
 
+  public showImages: boolean = false;
+  
   constructor(public photoService:PhotoService) {}
   addPhotoToGallery() {
     this.photoService.addNewToGallery();
   }
   async ngOnInit() {
+    await this.photoService.loadSaved();
+  }
+  async loadPhotos() {
     await this.photoService.loadSaved();
   }
 

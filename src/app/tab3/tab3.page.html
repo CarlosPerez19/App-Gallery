@@ -3,11 +3,21 @@
     <ion-title>
       Gallery
     </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadPhotos()">
+        <ion-icon slot="icon-only" name="refresh"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-grid>
+  <ion-item>
+    <ion-label>Show Images</ion-label>
+    <ion-toggle [(ngModel)]="showImages"></ion-toggle>
+  </ion-item>
+
+  <ion-grid *ngIf="showImages">
     <ion-row>
       <ion-col size="6" *ngFor="let photo of photoService.photos; index as position">
         <ion-img [src]="photo.webviewPath"></ion-img>
