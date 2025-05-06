@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import {Photo50QualityService} from '../services/photo50-quality.service'
 
 @Component({
   selector: 'app-tab1',
@@ -7,7 +8,13 @@ import { Component } from '@angular/core';
   standalone: false,
 })
 export class Tab1Page {
+  constructor(public photo50QualityService: Photo50QualityService) {}
 
-  constructor() {}
+  async ngOnInit() {
+    await this.photo50QualityService.loadSaved();
+  }
 
+  async addPhotoToGallery50Quality() {
+    await this.photo50QualityService.addNewToGallery50Quality();
+  }
 }
