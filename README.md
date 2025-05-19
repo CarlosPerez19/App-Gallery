@@ -1,3 +1,4 @@
+El APK, esta incluido en el repositorio
 Crear una carpeta Rources en la raiz del proyecto e insertar las imágenes
 
 ![image](https://github.com/user-attachments/assets/7b94a980-d528-4833-ae94-d204f0640f70)
